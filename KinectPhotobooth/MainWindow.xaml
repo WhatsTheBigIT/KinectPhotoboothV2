@@ -1,0 +1,126 @@
+﻿<Window x:Class="KinectPhotobooth.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:k="http://schemas.microsoft.com/kinect/2014"
+        Title="Kinect Photobooth" 
+        Width="1280" Height="800" 
+        Loaded="MainWindow_Loaded"
+        Closing="MainWindow_Closing">
+    <Window.Resources>
+        <SolidColorBrush x:Key="MediumGreyBrush" Color="#ff6e6e6e" />
+        <SolidColorBrush x:Key="KinectPurpleBrush" Color="#ff52318f" />
+        <SolidColorBrush x:Key="KinectBlueBrush" Color="#ff00BCF2" />
+        <Style TargetType="{x:Type Image}">
+            <Setter Property="SnapsToDevicePixels" Value="True" />
+        </Style>
+        
+        <Style x:Key="TextBlockStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="Purple" />
+        </Style>
+        <Style x:Key="CheckboxStyle" TargetType="CheckBox">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="Foreground" Value="Purple" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+
+        <Style TargetType="{x:Type Button}" x:Key="ScreenshotButton" >
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal" Background="Transparent">
+                                <TextBlock x:Name="ScreenshotText" Text="{TemplateBinding Content}" TextAlignment="Left"  VerticalAlignment="Center" Foreground="{StaticResource KinectPurpleBrush}" FontSize="15" />
+                                <Grid Margin="9,0,0,0">
+                                    <Image x:Name="ScreenshotNormal" Source="Images\ScreenshotNormal.png" Stretch="None" HorizontalAlignment="Center" />
+                                    <Image x:Name="ScreenshotHover" Source="Images\ScreenshotHover.png" Stretch="None" HorizontalAlignment="Center" Visibility="Collapsed" />
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter Property="Visibility" Value="Collapsed" TargetName="ScreenshotNormal" />
+                                <Setter Property="Visibility" Value="Visible" TargetName="ScreenshotHover" />
+                                <Setter Property="Foreground" Value="{StaticResource KinectBlueBrush}" TargetName="ScreenshotText" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <k:KinectRegion x:Name="kinectRegion" >
+        <Grid Margin="10 0 10 0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="4*" />
+                <ColumnDefinition Width="255" />
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!--<Image Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2"   Source="Images\Logo.png" HorizontalAlignment="Left" Stretch="Uniform" Margin="0,12,0,3" />-->
+            <Grid Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="550" />
+
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="2*" />
+
+                    <ColumnDefinition Width="4*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="15" />
+                    <RowDefinition Height="150" />
+                    <RowDefinition Height="25" />
+                </Grid.RowDefinitions>
+                <Image  Grid.Column="0" Grid.Row="1" Stretch="Uniform"  HorizontalAlignment="Left" Source="Images\KinectLogo.png" />
+                <Image  Grid.Column="1" Grid.Row="1" x:Name="ImagePreview" Stretch="Uniform"  HorizontalAlignment="Center"   Margin="20,0,20,0"/>
+                <k:KinectUserViewer  Grid.Column="2" Grid.Row="1"  Height="150" VerticalAlignment="Stretch"  HorizontalAlignment="Stretch" ImageBackground="Blue" />
+                <Image  Grid.Column="3" Grid.Row="1" Stretch="Uniform"  HorizontalAlignment="Right" Source="Images\MicrosoftLogo.png" />
+
+            </Grid>
+
+            <ListView Grid.Column="2" Grid.Row="1"
+                  ItemsSource="{Binding Path=Backgrounds}"
+                  SelectedItem="{Binding Path=SelectedBackground, Mode=TwoWay}" SelectionMode="Single">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Width="220" Height="120">
+                            <StackPanel.Background>
+                                <ImageBrush ImageSource="{Binding Path=ImagePath}" />
+                            </StackPanel.Background>
+                            <StackPanel Background="#AAAAAA20" HorizontalAlignment="Stretch" >
+                                <TextBlock VerticalAlignment="Center" Foreground="White"  HorizontalAlignment="Center" FontSize="15" Text="{Binding Path=Name}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+
+            </ListView>
+            <Grid Grid.Column="1" Grid.Row="1" Name="CompositeImage">
+                <Image Name ="Backdrop" Stretch="Fill" Source="{Binding Path=SelectedBackground.ImagePath}"/>
+                <Image Source="{Binding ImageSource}" Stretch="UniformToFill" />
+            </Grid>
+            <StackPanel Grid.Column="1" Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                <CheckBox IsChecked="{Binding Path=PersonFill, Mode=TwoWay}" Style="{StaticResource CheckboxStyle}" Margin="0,0,50,0" Content="Fill"/>
+                <CheckBox IsChecked="{Binding Path=LeaveTrails, Mode=TwoWay}" Style="{StaticResource CheckboxStyle}" Margin="0,0,50,0" Content="Leave Trails"/>
+                <TextBlock VerticalAlignment="Center" Style="{StaticResource TextBlockStyle}">Email Address</TextBlock>
+                <TextBox VerticalAlignment="Center" Height="20" Width="200" Margin="10,0,0,0" Text="{Binding Path=EmailAddress, Mode=TwoWay}" ></TextBox>
+                <Button VerticalAlignment="Center" Height="20" Width="20" Command="{Binding Path=OnClearClicked}" Content="X"></Button>
+                <CheckBox IsChecked="{Binding Path=ContactMe}"   Margin="10,0,0,0" Style="{StaticResource CheckboxStyle}" Content="Contact me about future events" />
+            </StackPanel>
+            <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource ScreenshotButton}" Content="Take Photo" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10 10 0 10" Click="ScreenshotButton_Click" />
+     
+        </Grid>
+    </k:KinectRegion>
+</Window>
