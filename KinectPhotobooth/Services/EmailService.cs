@@ -14,7 +14,7 @@ namespace KinectPhotobooth.Services
     public class EmailService
     {
 
-        private string _SMTPEmailServer = "smtphost.redmond.corp.microsoft.com";   
+        private string _SMTPEmailServer = "your smtp serve address";   
         private string _SMTPEmailUserID = "xxx@microsoft.com";   //Must be your usedID, and it must be authorized to use Kinectpb@microsoft.com
         private string _SMTPEmailPassword = "xxxxxx";         //Must be your password.
 
