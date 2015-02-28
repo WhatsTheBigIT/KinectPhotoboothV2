@@ -10,6 +10,7 @@ namespace KinectPhotobooth.Models
 {
     public sealed class ImageModel:IDisposable
     {
+
         public bool ShowTrails { get; set; }
         public bool PersonFill { get; set; }
         public int DepthHeight { get; set; }
