@@ -17,7 +17,8 @@ namespace KinectPhotobooth.Models
         
         public int ColorHeight {get;set;}
         public int ColorWidth {get;set;}
-
+        public double MaxDistance { get; set; }
+        public ushort[] DepthData { get; set; }
         public byte[] DisplayPixels { get; set; }
         public byte[] ColorFrameData { get; set; }
         public byte[] BodyIndexFrameData { get; set; }

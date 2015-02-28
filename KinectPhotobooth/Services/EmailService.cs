@@ -14,9 +14,9 @@ namespace KinectPhotobooth.Services
     public class EmailService
     {
 
-        private string _SMTPEmailServer = "your smtp serve address";   
-        private string _SMTPEmailUserID = "xxx@microsoft.com";   //Must be your usedID, and it must be authorized to use Kinectpb@microsoft.com
-        private string _SMTPEmailPassword = "xxxxxx";         //Must be your password.
+        private string _SMTPEmailServer = "smtphost.redmond.corp.microsoft.com";   
+        private string _SMTPEmailUserID = "wifink@microsoft.com";   //Must be your usedID, and it must be authorized to use Kinectpb@microsoft.com
+        private string _SMTPEmailPassword = "Michele0870(";         //Must be your password.
 
 
         //This is the body of the email being sent.  In the future, this should be a txt file which could be modified.  For now, it's a string :-(
@@ -24,8 +24,8 @@ namespace KinectPhotobooth.Services
         private static readonly string body = @"
 <p style='color:midnightblue;font-size:24px'>Greetings from the Microsoft Kinect Photo Booth!</p>
 <br />
-We hope you had a fantastic time at WILDHacks. The attached image is your photo taken at the Microsoft Kinect for Windows Photo Booth. <br /> <br />
-You, too, can build amazing apps with the $199 Kinect for Windows.  If you already have a Kinect with your XBox One, you can use it on your PC with a $49.99 adapter.  Both are avaibale 
+We hope you had a fantastic time at Hack Illinois. The attached image is your photo taken at the Microsoft Kinect for Windows Photo Booth. <br /> <br />
+You, too, can build amazing apps with the Kinect for Windows.  If you already have a Kinect with your XBox One, you can use it on your PC with the Kinect adapter.  Both are avaibale 
 from the Microsoft Store. </br>
 http://www.microsoft.com/en-us/kinectforwindows/purchase/default.aspx#tab=2
 
@@ -34,6 +34,7 @@ http://www.microsoft.com/en-us/kinectforwindows/purchase/default.aspx#tab=2
 Here are some resources which you may find usefull:
 <br />
     <ul>
+        <li><a href='http://www.microsoft.com/about/corporatecitizenship/en-us/youthspark/youthsparkhub/'>YouthSpark Hub:</a> Central resource for all things YouthSpark</li>        
         <li><a href='http://www.microsoft.com/click/services/Redirect2.ashx?CR_CC=200256686'>BizSpark:</a> Get the tools and resources to help build your business!</li>
         <li><a href='http://www.microsoft.com/click/services/Redirect2.ashx?CR_CC=200256687'>DreamSpark:</a> Program from Microsoft for students.</li>
         <li><a href='http://www.microsoft.com/click/services/Redirect2.ashx?CR_CC=200256683'>Microsoft Virtual Academy:</a> Free training at your fingertips.</li>
@@ -44,6 +45,8 @@ Here are some resources which you may find usefull:
 <br />
 
 For a list of additional resources from Microsoft, visit: http://aka.ms/StudentLinks <br />
+<br/><br/>
+Follow me on Twitter <a href='https://twitter.com/KinectPhotos'>@KinectPhotos</a>
 
 <br />
 Kindest Regards,

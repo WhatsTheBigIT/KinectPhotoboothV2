@@ -264,40 +264,43 @@ namespace KinectPhotobooth
                         byte player = imageModel.BodyIndexFrameData[depthIndex];
 
                         // if we're tracking a player for the current pixel, sets its color and alpha to full
-                        if (player != 0xff)
+                        if ((double)imageModel.DepthData[depthIndex] <= imageModel.MaxDistance)
                         {
-                            // retrieve the depth to color mapping for the current depth pixel
-                            ColorSpacePoint colorPoint = imageModel.ColorPoints[depthIndex];
-
-                            // make sure the depth pixel maps to a valid point in color space
-                            int colorX = (int)Math.Floor(colorPoint.X + 0.5);
-                            int colorY = (int)Math.Floor(colorPoint.Y + 0.5);
-
-                            if ((colorX >= 0) && (colorX < imageModel.ColorWidth) && (colorY >= 0) && (colorY < imageModel.ColorHeight))
+                            if (player != 0xff)
                             {
-                                // calculate index into color array
-                                int colorIndex = ((colorY * imageModel.ColorWidth) + colorX) * imageModel.BytesPerPixel;
+                                // retrieve the depth to color mapping for the current depth pixel
+                                ColorSpacePoint colorPoint = imageModel.ColorPoints[depthIndex];
 
-                                int displayIndex = depthIndex * imageModel.BytesPerPixel;
-                                if (imageModel.PersonFill)
+                                // make sure the depth pixel maps to a valid point in color space
+                                int colorX = (int)Math.Floor(colorPoint.X + 0.5);
+                                int colorY = (int)Math.Floor(colorPoint.Y + 0.5);
+
+                                if ((colorX >= 0) && (colorX < imageModel.ColorWidth) && (colorY >= 0) && (colorY < imageModel.ColorHeight))
                                 {
+                                    // calculate index into color array
+                                    int colorIndex = ((colorY * imageModel.ColorWidth) + colorX) * imageModel.BytesPerPixel;
 
-                                    imageModel.DisplayPixels[displayIndex] = colorArray[Convert.ToInt16(player)].R;
-                                    imageModel.DisplayPixels[displayIndex + 1] = colorArray[Convert.ToInt16(player)].G;
-                                    imageModel.DisplayPixels[displayIndex + 2] = colorArray[Convert.ToInt16(player)].B;
-                                    imageModel.DisplayPixels[displayIndex + 3] = (byte)rnd.Next(215, 255);
+                                    int displayIndex = depthIndex * imageModel.BytesPerPixel;
+                                    if (imageModel.PersonFill)
+                                    {
+
+                                        imageModel.DisplayPixels[displayIndex] = colorArray[Convert.ToInt16(player)].R;
+                                        imageModel.DisplayPixels[displayIndex + 1] = colorArray[Convert.ToInt16(player)].G;
+                                        imageModel.DisplayPixels[displayIndex + 2] = colorArray[Convert.ToInt16(player)].B;
+                                        imageModel.DisplayPixels[displayIndex + 3] = (byte)rnd.Next(215, 255);
+
+                                    }
+                                    else
+                                    {
+                                        // set source for copy to the color pixel
+
+                                        imageModel.DisplayPixels[displayIndex] = imageModel.ColorFrameData[colorIndex];
+                                        imageModel.DisplayPixels[displayIndex + 1] = imageModel.ColorFrameData[colorIndex + 1];
+                                        imageModel.DisplayPixels[displayIndex + 2] = imageModel.ColorFrameData[colorIndex + 2];
+                                        imageModel.DisplayPixels[displayIndex + 3] = 0xFF;
+                                    }
 
                                 }
-                                else
-                                {
-                                    // set source for copy to the color pixel
-
-                                    imageModel.DisplayPixels[displayIndex] = imageModel.ColorFrameData[colorIndex];
-                                    imageModel.DisplayPixels[displayIndex + 1] = imageModel.ColorFrameData[colorIndex + 1];
-                                    imageModel.DisplayPixels[displayIndex + 2] = imageModel.ColorFrameData[colorIndex + 2];
-                                    imageModel.DisplayPixels[displayIndex + 3] = 0xFF;
-                                }
-
                             }
                         }
 
@@ -393,8 +396,11 @@ namespace KinectPhotobooth
                                           imageModel.DisplayPixels,
                                           imageModel.DepthWidth * imageModel.BytesPerPixel,
                                           0);
+                        //_vm.NewImageSource = BlendImages(_vm.Bitmap, _Overlay, (int)CompositeImage.ActualWidth, (int)CompositeImage.ActualHeight,1.0);
                     });
                     imageModel.Dispose();
+
+                   
                 }
                 catch (Exception ex)
                 {
@@ -405,6 +411,47 @@ namespace KinectPhotobooth
             });
         }
         #endregion
+
+        /// <summary>
+        /// Returns a blended ImageSource which could be used with an Image XAML tag.  Overlay will automatically be centered onto the primay image.
+        /// </summary>
+        /// <param name="mainImage">Primary Image</param>
+        /// <param name="overlayImage">Overlay Image</param>
+        /// <param name="width">Final Resulting width</param>
+        /// <param name="height">Final Resulting height</param>
+        /// <param name="overlayTransparency">Transparency level of overlay</param>
+        /// <returns>ImageSource, suitable for binding with an Image</returns>
+        private ImageSource BlendImages(WriteableBitmap mainImage, WriteableBitmap overlayImage, int width, int height, double overlayTransparency)
+        {
+            //Resulting image containg main mange and overlay
+            RenderTargetBitmap renderBitmap = new RenderTargetBitmap(width, height, 96.0, 96.0, PixelFormats.Pbgra32);
+
+            DrawingVisual dv = new DrawingVisual();
+            
+            using (DrawingContext dc = dv.RenderOpen())
+            {
+                
+                ImageBrush mainImageBrush = new ImageBrush(mainImage);
+                mainImageBrush.Opacity = 1.0;
+                dc.DrawRectangle(mainImageBrush, null, new Rect(new Point(), new Size(width, height)));
+                
+                ImageBrush overlayImageBrush = new ImageBrush(overlayImage);
+                overlayImageBrush.Opacity = overlayTransparency;
+
+                //Calculate the starting point for the overlay.
+                Point overlayPoint = new Point(
+                   (width - overlayImage.Width) / 2,
+                   (height - overlayImage.Height) / 2
+                    );
+
+                dc.DrawRectangle(overlayImageBrush, null, new Rect(overlayPoint, new Size(overlayImage.Width, overlayImage.Height)));
+
+                dc.Close();
+            }
+            renderBitmap.Render(dv);
+            return renderBitmap;
+        }
+
 
         #region Main Window Closing
         /// <summary>
@@ -588,7 +635,8 @@ namespace KinectPhotobooth
                 ColorWidth = colorFrameDescription.Width,
                 ColorHeight = colorFrameDescription.Height,
                 ShowTrails = _vm.LeaveTrails,
-                PersonFill = _vm.PersonFill
+                PersonFill = _vm.PersonFill,
+                MaxDistance = _vm.BackgroundDistance
             };
             imageModel.ColorFrameData = new byte[imageModel.ColorWidth * imageModel.ColorHeight * this.bytesPerPixel];
 
@@ -598,8 +646,11 @@ namespace KinectPhotobooth
             imageModel.BytesPerPixel = bytesPerPixel;
             imageModel.Bodies = new Body[this.kinectSensor.BodyFrameSource.BodyCount];
             bodyFrame.GetAndRefreshBodyData(imageModel.Bodies);
-
+            imageModel.DepthData = new ushort[imageModel.DepthWidth * imageModel.DepthHeight];
+            
+            depthFrame.CopyFrameDataToArray(imageModel.DepthData);
             depthFrame.CopyFrameDataToArray(this.DepthFrameData);
+            
             if (colorFrame.RawColorImageFormat == ColorImageFormat.Bgra)
             {
                 colorFrame.CopyRawFrameDataToArray(imageModel.ColorFrameData);

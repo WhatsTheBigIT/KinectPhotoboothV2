@@ -72,7 +72,6 @@
             <Grid Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="550" />
-
                     <ColumnDefinition Width="2*" />
                     <ColumnDefinition Width="2*" />
 
@@ -120,7 +119,10 @@
                 <CheckBox IsChecked="{Binding Path=ContactMe}"   Margin="10,0,0,0" Style="{StaticResource CheckboxStyle}" Content="Contact me about future events" />
             </StackPanel>
             <Button Grid.Row="2" Grid.Column="2" Style="{StaticResource ScreenshotButton}" Content="Take Photo" Height="Auto" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10 10 0 10" Click="ScreenshotButton_Click" />
-     
+            <StackPanel Orientation="Vertical" Grid.Column="0" Grid.Row="1" >
+                <TextBlock FontSize="10" Text="{Binding Path=Inches, Mode=OneWay}"></TextBlock>
+                <Slider x:Name="BackgroundDistanceControl"  Value="{Binding Path=BackgroundDistance, Mode=TwoWay}"  Orientation="Vertical" Minimum="100" Maximum="4500"  Height="450"/>
+            </StackPanel>
         </Grid>
     </k:KinectRegion>
 </Window>

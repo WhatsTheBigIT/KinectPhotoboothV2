@@ -159,15 +159,14 @@
     <Resource Include="Images\ScreenshotNormal.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\Background.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\Backgrounds\StLouisSkyline.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\KinectLogo.png" />
     <Resource Include="Images\MicrosoftLogo.png" />
     <Resource Include="Images\Backgrounds\chicago.jpg" />
+    <Resource Include="Images\Backgrounds\kalahari001.jpg" />
+    <Resource Include="Images\Backgrounds\kalahari002.jpg" />
     <Content Include="Images\pointer.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
