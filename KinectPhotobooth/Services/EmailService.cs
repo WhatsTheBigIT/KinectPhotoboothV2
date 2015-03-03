@@ -15,8 +15,8 @@ namespace KinectPhotobooth.Services
     {
 
         private string _SMTPEmailServer = "smtphost.redmond.corp.microsoft.com";   
-        private string _SMTPEmailUserID = "wifink@microsoft.com";   //Must be your usedID, and it must be authorized to use Kinectpb@microsoft.com
-        private string _SMTPEmailPassword = "Michele0870(";         //Must be your password.
+        private string _SMTPEmailUserID = "...@microsoft.com";   //Must be your usedID, and it must be authorized to use Kinectpb@microsoft.com
+        private string _SMTPEmailPassword = "...";         //Must be your password.
 
 
         //This is the body of the email being sent.  In the future, this should be a txt file which could be modified.  For now, it's a string :-(
