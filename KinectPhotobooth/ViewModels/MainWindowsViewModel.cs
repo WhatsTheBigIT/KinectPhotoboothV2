@@ -169,7 +169,9 @@ namespace KinectPhotobooth.ViewModels
             OnClearClicked = new RelayCommand(ClearClickedCommand);
 
             Backgrounds = new ObservableCollection<BackgroundModel>();
-
+            
+            //Set the initial Background depth to 4000 mm
+            _BackgroundDistance = 4000;
 
            // Backgrounds.Add(new BackgroundModel() { Name = "Kalahari 001", ImagePath = "Images/Backgrounds/kalahari001.jpg" });
            // Backgrounds.Add(new BackgroundModel() { Name = "Kalahari 002", ImagePath = "Images/Backgrounds/kalahari002.jpg" });
