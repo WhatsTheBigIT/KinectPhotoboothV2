@@ -18,6 +18,7 @@ namespace KinectPhotobooth
     using System.Threading.Tasks.Dataflow;
     using KinectPhotobooth.Models;
     using Microsoft.Kinect.Wpf.Controls;
+    using System.Media;
 
     /// <summary>
     /// Interaction logic for MainWindow
@@ -511,6 +512,8 @@ namespace KinectPhotobooth
 
             }
 
+            PlaySoundFile();
+
             renderBitmap.Render(dv);
 
             // create a png bitmap encoder which knows how to save a .png file
@@ -728,6 +731,19 @@ namespace KinectPhotobooth
 
 
 
+        public void PlaySoundFile()
+        {
+            try
+            {
+                string fileToPlay = "say_cheese_esther_click.wav";
+
+                SoundPlayer simpleSound = new SoundPlayer(@"Sounds\" + fileToPlay);
+                simpleSound.PlaySync();
+            }
+            catch (Exception e)
+            {
+            }
+        }
 
 
     }
