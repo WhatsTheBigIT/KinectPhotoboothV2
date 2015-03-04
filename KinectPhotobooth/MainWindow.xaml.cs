@@ -18,6 +18,11 @@ namespace KinectPhotobooth
     using System.Threading.Tasks.Dataflow;
     using KinectPhotobooth.Models;
     using Microsoft.Kinect.Wpf.Controls;
+    using Microsoft.Samples.Kinect.SpeechBasics;
+    using Microsoft.Speech.Recognition;
+    using System.Collections.Generic;
+    using System.Runtime.InteropServices;
+    using Microsoft.Speech.AudioFormat;
     using System.Media;
 
     /// <summary>
@@ -51,6 +56,15 @@ namespace KinectPhotobooth
         /// </summary>
         private MultiSourceFrameReader reader = null;
 
+        /// <summary>
+        /// Stream for 32b-16b conversion.
+        /// </summary>
+        private KinectAudioStream convertStream = null;
+
+        /// <summary>
+        /// Speech recognition engine using audio data from Kinect.
+        /// </summary>
+        private SpeechRecognitionEngine speechEngine = null;
 
 
         /// <summary>
@@ -151,6 +165,13 @@ namespace KinectPhotobooth
                                                                             FrameSourceTypes.BodyIndex |
                                                                             FrameSourceTypes.Infrared |
                                                                             FrameSourceTypes.Body);
+                // grab the audio stream
+                IReadOnlyList<AudioBeam> audioBeamList = this.kinectSensor.AudioSource.AudioBeams;
+                System.IO.Stream audioStream = audioBeamList[0].OpenInputStream();
+
+                // create the convert stream
+                this.convertStream = new KinectAudioStream(audioStream);
+            
 
                 // set the status text
                 _vm.StatusText = Properties.Resources.InitializingStatusTextFormat;
@@ -160,6 +181,54 @@ namespace KinectPhotobooth
             {
                 // on failure, set the status text
                 _vm.StatusText = Properties.Resources.NoSensorStatusText;
+            }
+
+            RecognizerInfo ri = TryGetKinectRecognizer();
+
+            if (null != ri)
+            {
+
+                this.speechEngine = new SpeechRecognitionEngine(ri.Id);
+
+                /****************************************************************
+                * 
+                * Use this code to create grammar programmatically rather than from
+                * a grammar file.
+                ****************************************************************/
+                var commands = new Choices();
+                commands.Add(new SemanticResultValue("take my picture", "TAKEPICTURE"));
+                
+                var gb = new GrammarBuilder { Culture = ri.Culture };
+                gb.Append(commands);
+                
+                var g = new Grammar(gb);
+                this.speechEngine.LoadGrammar(g);
+                
+
+                // Create a grammar from grammar definition XML file.
+                //using (var memoryStream = new MemoryStream(Encoding.ASCII.GetBytes(Properties.Resources.SpeechGrammar)))
+                //{
+                //    var g = new Grammar(memoryStream);
+                //    this.speechEngine.LoadGrammar(g);
+                //}
+
+                this.speechEngine.SpeechRecognized += this.SpeechRecognized;
+                this.speechEngine.SpeechRecognitionRejected += this.SpeechRejected;
+
+                // let the convertStream know speech is going active
+                this.convertStream.SpeechActive = true;
+
+                // For long recognition sessions (a few hours or more), it may be beneficial to turn off adaptation of the acoustic model. 
+                // This will prevent recognition accuracy from degrading over time.
+                speechEngine.UpdateRecognizerSetting("AdaptationOn", 0);
+
+                this.speechEngine.SetInputToAudioStream(
+                    this.convertStream, new SpeechAudioFormatInfo(EncodingFormat.Pcm, 16000, 16, 1, 32000, 2, null));
+                this.speechEngine.RecognizeAsync(RecognizeMode.Multiple);
+            }
+            else
+            {
+                //this.statusBarText.Text = Properties.Resources.NoSpeechRecognizer;
             }
 
 
@@ -612,6 +681,33 @@ namespace KinectPhotobooth
             }
         }
 
+        private static RecognizerInfo TryGetKinectRecognizer()
+        {
+            IEnumerable<RecognizerInfo> recognizers;
+
+            // This is required to catch the case when an expected recognizer is not installed.
+            // By default - the x86 Speech Runtime is always expected. 
+            try
+            {
+                recognizers = SpeechRecognitionEngine.InstalledRecognizers();
+            }
+            catch (COMException)
+            {
+                return null;
+            }
+
+            foreach (RecognizerInfo recognizer in recognizers)
+            {
+                string value;
+                recognizer.AdditionalInfo.TryGetValue("Kinect", out value);
+                if ("True".Equals(value, StringComparison.OrdinalIgnoreCase) && "en-US".Equals(recognizer.Culture.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    return recognizer;
+                }
+            }
+
+            return null;
+        }
 
 
         private void ProcessFrames(DepthFrame depthFrame, ColorFrame colorFrame, BodyIndexFrame bodyIndexFrame, BodyFrame bodyFrame)
@@ -730,6 +826,43 @@ namespace KinectPhotobooth
         #endregion
 
 
+        /// <summary>
+        /// Handler for recognized speech events.
+        /// </summary>
+        /// <param name="sender">object sending the event.</param>
+        /// <param name="e">event arguments.</param>
+        private void SpeechRecognized(object sender, SpeechRecognizedEventArgs e)
+        {
+            // Speech utterance confidence below which we treat speech as if it hadn't been heard
+            const double ConfidenceThreshold = 0.3;
+
+            // Number of degrees in a right angle.
+            const int DegreesInRightAngle = 90;
+
+            // Number of pixels turtle should move forwards or backwards each time.
+            const int DisplacementAmount = 60;
+
+            if (e.Result.Confidence >= ConfidenceThreshold)
+            {
+                switch (e.Result.Semantics.Value.ToString())
+                {
+                    case "TAKEPICTURE":
+                        PlaySoundFile();
+                        ScreenshotButton_Click(this, new RoutedEventArgs());
+                        break;
+
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handler for rejected speech events.
+        /// </summary>
+        /// <param name="sender">object sending the event.</param>
+        /// <param name="e">event arguments.</param>
+        private void SpeechRejected(object sender, SpeechRecognitionRejectedEventArgs e)
+        {
+        }
 
         public void PlaySoundFile()
         {
